@@ -1,0 +1,104 @@
+ Вивести список всіх працівників даної компанії
+SELECT "empls".* FROM "empls" 
+
+Вивести список імен працівників (без повторів, впорядковано за алфавітом)
+
+Empl.select(:FirstName).order("FirstName ASC")
+  Empl Load (17.3ms)  SELECT FirstName FROM "empls" ORDER BY FirstName ASC
+  
+Empl.find(:all, :select => "FirstName", :order => "FirstName ASC")
+  Empl Load (0.2ms)  SELECT FirstName FROM "empls" ORDER BY FirstName ASC
+  
+Empl.find(:all, :select => "DISTINCT FirstName", :order => "FirstName ASC")
+  Empl Load (0.3ms)  SELECT DISTINCT FirstName FROM "empls" ORDER BY FirstName ASC
+
+Порахувати кількість працівників компанії
+Empl.count
+   (0.2ms)  SELECT COUNT(*) FROM "empls" 
+   
+Отримати список кількості працівників у кожному підрозділі (номер підрозділу). Впорядкувати
+підрозділи за спаданням кількості працівників
+
+SELECT depts.id, COUNT(empls.id) FROM depts LEFT JOIN empls ON (depts.id = dept_id) GROUP BY depts.id
+
+Empl.where(DeptId: '1').count
+   (0.3ms)  SELECT COUNT(*) FROM "empls" WHERE "empls"."DeptId" = 1
+   
+SELECT 'empls'.* FROM 'empls' WHERE 'empls'.'id' IN (1, 2)
+
+   
+   SELECT * COUNT empls.id AS empl_count
+   FROM "deps"
+   WHERE 
+   ORDER BY empl_count 
+
+Dept.find(:all, :order => "COUNT (empl.id) ASC")
+Book.find(:all, :select => "author_id, count(id) as book_count", :group => "author_id", :order => "book_count")
+
+SELECT 'depts'.* COUNT 'empls'.'id' AS empl_count FROM 'depts' WHERE 'depts'.'id' = 'dept_id' ORDER BY empl_count
+
+
+ActiveRecord::Base.connection.select_all("SELECT 'depts'.* FROM 'depts','empls' WHERE 'depts'.'id'='dept_id' ORDER BY COUNT('dept_id')")
+SELECT 'depts'.* FROM 'depts','empls' ORDER BY COUNT ('depts'.'id')
+
+select ID, City, COUNT(empls.ID) CNT from depts LEFT JOIN empls ON (depts.ID = dept_id) GROUP BY depts.ID ORDER BY CNT    (!!!)
+Dept.select(:*).group("depts.id").order(count(empls.id))
+Dept.select(:*.count("empls.id" as cnt)).group("depts.id").order(cnt)
+Dept.find(:all, :select => 'count(empls.id) cnt', :group => 'depts.id', :order => 'cnt')
+Dept.find(:all, :select => 'count(empls.id) cnt', :joins('LEFT JOIN empls ON (depts.ID = dept_id)'),:group => 'depts.id', :order => 'cnt')
+
+ActiveRecord::Base.connection.select_all(" SELECT depts.id, City, COUNT(empls.id) AS CNT FROM depts LEFT JOIN empls ON (depts.id = dept_id) GROUP BY depts.id ORDER BY CNT DESC")
+SELECT depts.id, City, COUNT(empls.id) AS CNT FROM depts LEFT JOIN empls ON (depts.id = dept_id) GROUP BY depts.id ORDER BY CNT
+SELECT depts.id, City, COUNT(empls.id) AS CNT FROM empls, depts WHERE depts.id = dept_id GROUP BY depts.id ORDER BY CNT
+SELECT depts.id, City FROM empls, depts WHERE depts.id = dept_id GROUP BY depts.id ORDER BY COUNT(empls.id)
+
+Отримати список кількості працівників у кожному підрозділі (номер підрозділу). Впорядкувати
+за назвами міст де розташовується підрозділ
+
+SELECT depts.City, COUNT(empls.id) FROM depts LEFT JOIN empls ON (depts.id = dept_id) GROUP BY depts.id ORDER BY City 
+
+Вибрати список міст, що містять букву 'Л' на початку слова
+
+SELECT depts.City FROM depts WHERE depts.City LIKE 'L%'
+SELECT * FROM depts WHERE depts.City LIKE 'L%'
+
+Вибрати список всіх міст, що містять букву 'ь' в середині слова та відповідну кількість працівників
+навпроти кожної назви. Врахувати, що у таблиці підрозділів може бути місто у якому відсутні
+працівники і у таблиці працівників можуть бути такі, для яких дані поля DeptId=NULL.
+
+SELECT depts.City, COUNT(empls.id) FROM depts LEFT JOIN empls ON (depts.id = dept_id) WHERE depts.City LIKE '%as%' GROUP BY depts.id
+
+Вибрати список людей, що мають однофамільців. Впорядкувати за алфавітом.
+SELECT LastName FROM empls  GROUP BY  LastName HAVING count(*)>1
+SELECT * FROM Empls WHERE LastName IN(SELECT lastname FROM empls GROUP BY lastname HAVING count(*) > 1)
+
+Вибрати список людей, що мають декілька повних співпадінь імені та прізвища з міста Львів і
+впорядкувати за іменами.
+SELECT * FROM empls WHERE (LastName, FirstName) IN(SELECT LastName, FirstName FROM empls GROUP BY Lastname, FirstName HAVING count(*) > 1) 
+
+SELECT FirstName, LastName, dept_id FROM empls LEFT JOIN depts ON (dept_id = depts.id) 
+WHERE depts.City = 'Lviv'
+AND (LastName, FirstName) IN(SELECT LastName, FirstName FROM empls GROUP BY Lastname, FirstName HAVING count(*) > 1) 
+ORDER BY FirstName
+
+Отримати список міст з кількістю працівників з іменем 'Іван' більше 10. Впорядкувати за
+номером підрозділу.
+SELECT dept.City 
+FROM empls, depts 
+WHERE depts.id = dept_id AND FirstName = 'Andrew'
+GROUP BY dept.City
+HAVING count(FirstName) > 3
+ORDER BY depts.id
+
+SELECT depts.City 
+
+FROM depts 
+
+LEFT JOIN empls ON (depts.id = dept_id) AND empls.FirstName = 'Vasja'
+
+GROUP BY depts.City
+
+HAVING count(empls.FirstName) >= 3
+
+ORDER BY depts.id
+
